@@ -1,0 +1,15 @@
+[package]
+name = "goodreads-genres-api"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+reqwest = { version = "0.12.4", features = ["json"] }
+tokio = {version = "1.38.0", features = ["full"] }
+
+[dev-dependencies]
+cargo-watch = "8.5.2"
+
+[[bin]]
+name = "app"
+path = "src/main.rs"
