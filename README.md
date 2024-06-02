@@ -1,6 +1,6 @@
 # Goodreads Genres API
 
-I love looking up various [Goodreads]() Genre pages to see which books are *most read* each week.
+I love looking up various [Goodreads](https://www.goodreads.com) Genre pages to see which books are *most read* each week.
 
 However, I also really want to filter the list to only show high ranking and highly reviewed books.
 
