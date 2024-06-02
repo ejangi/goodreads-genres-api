@@ -26,7 +26,7 @@ pub mod wget {
         results
     }
 
-    async fn fetch_url(url: String) -> Result<String, Error> {
+    pub async fn fetch_url(url: String) -> Result<String, Error> {
         let response = reqwest::get(&url).await?;
         let body = response.text().await?;
         Ok(body)
@@ -40,8 +40,13 @@ pub mod wget {
         let responses = fetch_all_urls(urls).await;
 
         for response in &responses {
+            assert!(response.len() > 0);
+
             if let Some(first_line) = response.lines().next() {
-                println!("{}", first_line);
+                let first_9: String = first_line.trim().to_lowercase().chars().take(9).collect();
+
+                assert_eq!("<!doctype".to_string(), first_9);
+                // println!("{}", first_line);
             }
         }
 
