@@ -14,3 +14,17 @@ I've included a `docker compose` development environment. To run the tests, simp
 docker compose build
 docker compose up
 ```
+
+## Production
+
+To build the production docker image, you can run something like:
+
+```bash
+docker build -t goodreads-groups-api .
+```
+
+And test the build:
+
+```bash
+docker run -p8080:8080 goodreads-groups-api
+```

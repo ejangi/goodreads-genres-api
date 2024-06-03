@@ -7,7 +7,10 @@ edition = "2021"
 regex = "1.10.4"
 reqwest = { version = "0.12.4", features = ["json"] }
 scraper = "0.19.0"
-tokio = {version = "1.38.0", features = ["full"] }
+tokio = { version = "1.38.0", features = ["full"] }
+
+[dependencies.rocket]
+features = ["json", "msgpack", "uuid"]
 
 [dev-dependencies]
 cargo-watch = "8.5.2"

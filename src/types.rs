@@ -1,3 +1,7 @@
+use rocket::serde::{Serialize, Deserialize};
+
+#[derive(Serialize, Deserialize)]
+#[serde(crate = "rocket::serde")]
 pub struct BookBox {
     pub title: String,
     pub url: String,

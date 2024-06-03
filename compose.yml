@@ -5,3 +5,5 @@ services:
       dockerfile: docker/dev.Dockerfile
     volumes:
       - .:/app
+    ports:
+      - 8080:8080
