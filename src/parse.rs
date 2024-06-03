@@ -2,8 +2,6 @@ pub mod parse {
     use scraper::{Html, Selector};
     use crate::types::BookBox;
     use regex::Regex;
-    use htmlentity::entity::{decode, ICodedDataTrait};
-    use htmlentity::types::Byte;
 
     const GOODREADS_BASENAME: &str = "https://goodreads.com";
 
@@ -62,15 +60,6 @@ pub mod parse {
         }
 
         return book_boxes;
-    }
-
-    pub fn html_decode(encoded_data: String) -> String {
-        let bytes = encoded_data
-            .as_bytes()
-            .into_iter()
-            .map(|byte| *byte)
-            .collect::<Vec<Byte>>();
-        return decode(&bytes).to_string().unwrap();
     }
 
     #[tokio::test]
