@@ -12,10 +12,20 @@ pub mod parse {
         let a_element = Selector::parse("a[href]").unwrap();
         let rating_avg_regex = Regex::new(r#"([0-5]{1}\.[0-9]+)\savg\srating"#).unwrap();
         let rating_count_regex = Regex::new(r#"([0-9,]{3,})\sratings"#).unwrap();
+        let canonical_element = Selector::parse("link[rel=canonical]").unwrap();
 
         let document = Html::parse_document(&body);
         let book_boxes_elements = document.select(&book_box_selector);
         let mut book_boxes:Vec<BookBox> = Vec::new();
+        let mut genre:Option<String> = None;
+        
+        if let Some(canonical_href) = document.select(&canonical_element).next().unwrap().value().attr("href") {
+            let canonical_split = canonical_href.split("/");
+            if let Some(canonical_last) = canonical_split.last() {
+                genre = Some(canonical_last.to_string());
+            }
+
+        }
 
         for book_box_element in book_boxes_elements {
             let mut title = String::from("");
@@ -55,7 +65,7 @@ pub mod parse {
             }
 
 
-            let book_box = BookBox::new(title, url, image_url, rating_avg, rating_count);
+            let book_box = BookBox::new(title, url, image_url, rating_avg, rating_count, genre.clone());
             book_boxes.push(book_box);
         }
 
@@ -77,6 +87,7 @@ pub mod parse {
             assert!(book.image_url.len() > 0);
             assert!(book.rating_avg.unwrap_or(0.0) > 0.0);
             assert!(book.rating_count.unwrap_or(0) > 0);
+            assert!(book.genre.unwrap_or("".to_string()).len() > 0);
         }
     }
 }
