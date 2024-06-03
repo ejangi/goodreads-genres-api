@@ -20,11 +20,11 @@ docker compose up
 To build the production docker image, you can run something like:
 
 ```bash
-docker build -t goodreads-groups-api .
+docker build -t goodreads-genres-api .
 ```
 
 And test the build:
 
 ```bash
-docker run -p8080:8080 goodreads-groups-api
+docker run -p8080:8080 goodreads-genres-api
 ```

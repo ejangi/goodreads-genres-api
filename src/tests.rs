@@ -8,7 +8,7 @@ mod test {
     #[test]
     fn index() {
         let client = Client::tracked(rocket()).unwrap();
-        let res = client.get("/?groups=science-fiction-fantasy").header(ContentType::JSON).dispatch();
+        let res = client.get("/?genres=science-fiction-fantasy").header(ContentType::JSON).dispatch();
         assert_eq!(res.status(), Status::Ok);
         let res_string = res.into_string().unwrap_or("".to_string());
         let res_first2: String = res_string.chars().take(2).collect();

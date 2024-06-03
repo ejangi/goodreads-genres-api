@@ -10,15 +10,15 @@ use rocket::serde::json::{Json, Value,json};
 
 const GOODREADS_GENRES_BASEURL: &str = "https://www.goodreads.com/genres/most_read";
 
-#[get("/?<groups>")]
-async fn index(groups: Option<String>) -> Json<Vec<BookBox>> {
+#[get("/?<genres>")]
+async fn index(genres: Option<String>) -> Json<Vec<BookBox>> {
     // let urls = vec!["https://storage.googleapis.com/ejangi-public-files/goodreads-groups-example.html".to_string()];
     let mut urls: Vec<String> = Vec::new();
     let mut books = Vec::new();
 
-    match groups {
-        Some(groups) => {
-            let splits = groups.split(",");
+    match genres {
+        Some(genres) => {
+            let splits = genres.split(",");
 
             for g in splits {
                 if g.len() > 0 {
