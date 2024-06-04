@@ -22,4 +22,9 @@ impl BookBox {
             genre
         }
     }
+
+    pub fn fields_list() -> Vec<String> {
+        let fields = std::any::type_name::<BookBox>().to_string();
+        return fields.split(">::").map(|f| f.to_string()).collect();
+    }
 }
