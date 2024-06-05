@@ -6,13 +6,13 @@ pub mod parse {
     const GOODREADS_BASENAME: &str = "https://goodreads.com";
 
     pub fn get_books_from_html(body: String) -> Vec<BookBox> {
-        // document.querySelectorAll('.bigBoxContent .bookBox');
+        let canonical_element = Selector::parse("link[rel=canonical]").unwrap();
         let book_box_selector = Selector::parse(".bigBoxContent .bookBox").unwrap();
         let image_element = Selector::parse(r#"a img[alt]"#).unwrap();
         let a_element = Selector::parse("a[href]").unwrap();
         let rating_avg_regex = Regex::new(r#"([0-5]{1}\.[0-9]+)\savg\srating"#).unwrap();
         let rating_count_regex = Regex::new(r#"([0-9,]{3,})\sratings"#).unwrap();
-        let canonical_element = Selector::parse("link[rel=canonical]").unwrap();
+        let description_regex = Regex::new(r#"<span id=\\"freeText[0-9]+\\" style=\\"display:none\\">(.*)<\\/span>"#).unwrap();
 
         let document = Html::parse_document(&body);
         let book_boxes_elements = document.select(&book_box_selector);
@@ -31,6 +31,7 @@ pub mod parse {
             let mut title = String::from("");
             let mut url = String::from("");
             let mut image_url = String::from("");
+            let mut description = String::from("");
             let mut rating_avg: Option<f32> = None;
             let mut rating_count: Option<i32> = None;
 
@@ -64,8 +65,13 @@ pub mod parse {
                 }
             }
 
+            if let Some(description_matches) = description_regex.captures(&book_box_element.html()) {
+                if let Some(description_match) = description_matches.get(1) {
+                    description = description_match.as_str().to_string();
+                }
+            }
 
-            let book_box = BookBox::new(title, url, image_url, rating_avg, rating_count, genre.clone());
+            let book_box = BookBox::new(title, url, image_url, description, rating_avg, rating_count, genre.clone());
             book_boxes.push(book_box);
         }
 
