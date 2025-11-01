@@ -17,7 +17,7 @@ mod test {
         assert_eq!("[{".to_string(), res_first2);
         let books: Vec<BookBox> = json::from_str(&res_string).unwrap();
         // println!("Books: {}", books.len());
-        assert_eq!(36, books.len());
+        assert_eq!(47, books.len());
         // println!("{}", res_string);
     }
 

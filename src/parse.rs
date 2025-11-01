@@ -18,7 +18,7 @@ pub mod parse {
         let book_boxes_elements = document.select(&book_box_selector);
         let mut book_boxes:Vec<BookBox> = Vec::new();
         let mut genre:Option<String> = None;
-        
+
         if let Some(canonical_href) = document.select(&canonical_element).next().unwrap().value().attr("href") {
             let canonical_split = canonical_href.split("/");
             if let Some(canonical_last) = canonical_split.last() {
@@ -35,14 +35,26 @@ pub mod parse {
             let mut rating_avg: Option<f32> = None;
             let mut rating_count: Option<i32> = None;
 
-            if let Some(alt) = book_box_element.select(&image_element).next().unwrap().value().attr("alt") {
-                title = alt.to_string();
+            if let Some(image_element) = book_box_element.select(&image_element).next() {
+                if let Some(alt) = image_element.value().attr("alt") {
+                    // If we successfully get the 'alt' attribute, use it as the title.
+                    title = alt.to_string();
+                } else {
+                    // FAILURE (alt is None): Skip this book_box_element.
+                    println!("⚠️ Skipping book: Could not find 'alt' attribute.");
+                    continue;
+                }
+            } else {
+                // FAILURE (image element not found): Skip this book_box_element.
+                println!("⚠️ Skipping book: Could not find the image element.");
+                println!("HTML: {:?}", book_box_element.html());
+                continue;
             }
 
             if let Some(href) = book_box_element.select(&a_element).next().unwrap().value().attr("href") {
                 url = href.to_string();
                 let url_first_6: String = url.chars().take(6).collect();
-    
+
                 if url.len() > 5 && url_first_6 != "https" {
                     url = GOODREADS_BASENAME.to_string() + &url;
                 }
