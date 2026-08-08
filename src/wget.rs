@@ -43,8 +43,9 @@ fn client() -> Client {
 
 async fn fetch_url_with_client(client: Client, url: String) -> Result<String, Error> {
     let response = client.get(url).send().await?.error_for_status()?;
-    let body = response.text().await?;
-    Ok(body)
+    let body = response.bytes().await?;
+
+    Ok(String::from_utf8_lossy(&body).into_owned())
 }
 
 #[tokio::test]
@@ -95,4 +96,27 @@ async fn client_sends_goodreads_user_agent() {
     assert!(request
         .lines()
         .any(|line| line.eq_ignore_ascii_case(&format!("user-agent: {USER_AGENT}"))));
+}
+
+#[tokio::test]
+async fn fetch_url_decodes_mislabelled_goodreads_html_as_utf8() {
+    use tokio::io::AsyncWriteExt;
+    use tokio::net::TcpListener;
+
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let address = listener.local_addr().unwrap();
+    let server = tokio::spawn(async move {
+        let (mut stream, _) = listener.accept().await.unwrap();
+        stream
+            .write_all(
+                b"HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=iso-8859-1\r\nContent-Length: 7\r\nConnection: close\r\n\r\nwon\xe2\x80\x99t",
+            )
+            .await
+            .unwrap();
+    });
+
+    let body = fetch_url(format!("http://{address}")).await.unwrap();
+    server.await.unwrap();
+
+    assert_eq!(body, "won’t");
 }
