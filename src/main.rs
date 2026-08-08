@@ -1,79 +1,69 @@
-#[macro_use] extern crate rocket;
-#[cfg(test)] mod tests;
-pub mod wget;
+#[macro_use]
+extern crate rocket;
 pub mod parse;
+#[cfg(test)]
+mod tests;
 pub mod types;
-use crate::wget::wget::fetch_all_urls;
-use crate::parse::parse::get_books_from_html;
+pub mod wget;
+use crate::parse::get_books_from_html;
 use crate::types::BookBox;
-use rocket::serde::json::{Json, Value,json};
+use crate::wget::fetch_all_urls;
+use rocket::serde::json::{json, Json, Value};
 
 const GOODREADS_GENRES_BASEURL: &str = "https://www.goodreads.com/genres/most_read";
 
 #[get("/?<genres>&<sort_by>&<min_avg>&<min_count>")]
-async fn index(genres: Option<String>, sort_by: Option<String>, min_avg: Option<f32>, min_count: Option<i32>) -> Json<Vec<BookBox>> {
-    // let urls = vec!["https://storage.googleapis.com/ejangi-public-files/goodreads-groups-example.html".to_string()];
-    let mut urls: Vec<String> = Vec::new();
+async fn index(
+    genres: Option<String>,
+    sort_by: Option<String>,
+    min_avg: Option<f32>,
+    min_count: Option<i32>,
+) -> Json<Vec<BookBox>> {
     let mut books = Vec::new();
 
-    match genres {
-        Some(genres) => {
-            let splits = genres.split(",");
+    let Some(genres) = genres else {
+        return Json(books);
+    };
 
-            for g in splits {
-                if g.len() > 0 {
-                    let url: String = GOODREADS_GENRES_BASEURL.to_string() + "/" + g;
-                    urls.push(url);
-                }
-            }
+    let urls = genres
+        .split(',')
+        .filter(|genre| !genre.is_empty())
+        .map(|genre| format!("{GOODREADS_GENRES_BASEURL}/{genre}"))
+        .collect::<Vec<_>>();
 
-        },
-        None => {
-            json!(books);
-        }
+    if urls.is_empty() {
+        return Json(books);
     }
 
-    if urls.len() == 0 {
-        json!(books);
-    }
-
-    let responses = fetch_all_urls(urls).await;
-    
-    for response in &responses {
-        let book_boxes = get_books_from_html(response.to_string());
+    for response in fetch_all_urls(urls).await {
+        let book_boxes = get_books_from_html(response);
         books.extend(book_boxes);
     }
 
-    match sort_by {
-        Some(sort_by) => {
-            if sort_by == "avg".to_string() {
-                books.sort_by(|a, b| b.rating_avg.unwrap_or(0.0).partial_cmp(&a.rating_avg.unwrap_or(0.0)).unwrap());
-            }
-            else if sort_by == "count".to_string() {
-                books.sort_by(|a, b| b.rating_count.unwrap_or(0).cmp(&a.rating_count.unwrap_or(0)));
-            }
-        },
-        None => {
-            books.sort_by(|a, b| b.rating_count.unwrap_or(0).cmp(&a.rating_count.unwrap_or(0)));
+    if sort_by.as_deref() == Some("avg") {
+        books.sort_by(|a, b| {
+            b.rating_avg
+                .unwrap_or(0.0)
+                .total_cmp(&a.rating_avg.unwrap_or(0.0))
+        });
+    } else {
+        books.sort_by(|a, b| {
+            b.rating_count
+                .unwrap_or(0)
+                .cmp(&a.rating_count.unwrap_or(0))
+        });
+    }
+
+    if let Some(min_avg) = min_avg {
+        if min_avg > 0.0 && min_avg < 5.0 {
+            books.retain(|book| book.rating_avg.unwrap_or(0.0) > min_avg);
         }
     }
 
-    match min_avg {
-        Some(min_avg) => {
-            if min_avg > 0.0 && min_avg < 5.0 {
-                books = books.into_iter().filter(|b| b.rating_avg.unwrap_or(0.0) > min_avg).collect();
-            }
-        },
-        None => {}
-    }
-
-    match min_count {
-        Some(min_count) => {
-            if min_count > 0 {
-                books = books.into_iter().filter(|b| b.rating_count.unwrap_or(0) > min_count).collect();
-            }
-        },
-        None => {}
+    if let Some(min_count) = min_count {
+        if min_count > 0 {
+            books.retain(|book| book.rating_count.unwrap_or(0) > min_count);
+        }
     }
 
     Json(books)

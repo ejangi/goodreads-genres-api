@@ -1,4 +1,4 @@
-use rocket::serde::{Serialize, Deserialize};
+use rocket::serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
@@ -9,11 +9,19 @@ pub struct BookBox {
     pub description: String,
     pub rating_avg: Option<f32>,
     pub rating_count: Option<i32>,
-    pub genre: Option<String>
+    pub genre: Option<String>,
 }
 
 impl BookBox {
-    pub fn new(title: String, url: String, image_url: String, description: String, rating_avg: Option<f32>, rating_count: Option<i32>, genre: Option<String>) -> Self {
+    pub fn new(
+        title: String,
+        url: String,
+        image_url: String,
+        description: String,
+        rating_avg: Option<f32>,
+        rating_count: Option<i32>,
+        genre: Option<String>,
+    ) -> Self {
         BookBox {
             title,
             url,
@@ -21,12 +29,12 @@ impl BookBox {
             description,
             rating_avg,
             rating_count,
-            genre
+            genre,
         }
     }
 
     pub fn fields_list() -> Vec<String> {
         let fields = std::any::type_name::<BookBox>().to_string();
-        return fields.split(">::").map(|f| f.to_string()).collect();
+        fields.split(">::").map(|f| f.to_string()).collect()
     }
 }

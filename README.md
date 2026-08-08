@@ -8,11 +8,21 @@ This little rust app helps me to do that for the Genres I care about.
 
 ## Development
 
-I've included a `docker compose` development environment. To run the tests, simply run:
+The project uses Docker for its Rust toolchain. Run the test suite once with:
 
 ```bash
 docker compose build
-docker compose up
+docker compose run --rm app cargo test
+```
+
+For a test watch loop, run `docker compose up`. The tests make outbound HTTP
+requests to Goodreads and a public HTML fixture, so they require network access
+and may need adjustment if either source changes its response.
+
+To run the API locally from the development image:
+
+```bash
+docker compose run --rm --service-ports app cargo run
 ```
 
 ## Production

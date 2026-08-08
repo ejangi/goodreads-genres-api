@@ -1,4 +1,4 @@
-FROM rust AS rust
+FROM rust:1.97.1-bookworm AS rust
 
 WORKDIR /app
 
@@ -12,8 +12,8 @@ WORKDIR /app
 
 COPY --from=rust /app/target/release/app ./
 
-ENV PORT 8080
-ENV ROCKET_PORT ${PORT}
-ENV ROCKET_ADDRESS 0.0.0.0
+ENV PORT=8080
+ENV ROCKET_PORT=${PORT}
+ENV ROCKET_ADDRESS=0.0.0.0
 
 CMD ["./app"]
