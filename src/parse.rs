@@ -1,4 +1,3 @@
-
 use crate::types::BookBox;
 use regex::Regex;
 use scraper::{Html, Selector};
