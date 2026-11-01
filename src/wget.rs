@@ -100,13 +100,21 @@ async fn client_sends_goodreads_user_agent() {
 
 #[tokio::test]
 async fn fetch_url_decodes_mislabelled_goodreads_html_as_utf8() {
-    use tokio::io::AsyncWriteExt;
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
     use tokio::net::TcpListener;
 
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let address = listener.local_addr().unwrap();
     let server = tokio::spawn(async move {
         let (mut stream, _) = listener.accept().await.unwrap();
+        let mut request = Vec::new();
+        loop {
+            let byte = stream.read_u8().await.unwrap();
+            request.push(byte);
+            if request.ends_with(b"\r\n\r\n") {
+                break;
+            }
+        }
         stream
             .write_all(
                 b"HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=iso-8859-1\r\nContent-Length: 7\r\nConnection: close\r\n\r\nwon\xe2\x80\x99t",
